@@ -24,8 +24,8 @@ RUN cmake -DBUILD_SHARED_LIBS:BOOL=ON \
     -DCMAKE_INSTALL_PREFIX:PATH=../libtorch \
     ../pytorch
 
-RUN cmake --build . --target install 
-#RUN cmake --build . --target install -- -j $(nproc)
+#RUN cmake --build . --target install 
+RUN cmake --build . --target install -- -j $(nproc)
 
 # Install FTorch
 WORKDIR /opt
