@@ -1,4 +1,4 @@
-FROM cesm_2:latest
+FROM cesm:latest
 
 # Install Libtorch and FTorch
 
@@ -50,4 +50,15 @@ RUN make && make install
 ENV LD_LIBRARY_PATH=/usr/local/ftorch/lib:$LD_LIBRARY_PATH 
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/cuda/"
 
-WORKDIR /code
+# Revert to gcc-9.5
+# Install GCC-9
+#RUN apt remove -y gcc && apt update && apt install -y gcc-9 g++-9
+#RUN ln -s /usr/bin/gcc-9 /usr/bin/gcc
+#RUN ln -s /usr/bin/g++-9 /usr/bin/g++
+
+# Install Fortran
+# Build for source maybe if becomes outdated: https://gcc.gnu.org/wiki/GFortranBinaries#FromSource
+#RUN apt install -y gfortran-9 
+#RUN ln -s /usr/bin/gfortran-9 /usr/bin/gfortran
+
+WORKDIR /opt/cesm/cime/scripts
