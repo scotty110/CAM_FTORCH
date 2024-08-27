@@ -569,7 +569,7 @@ ifeq ($(strip $(USE_FTORCH)), True)
   SLIBS += -L$(FTORCH_LOC)/lib64 -lftorch
   LDFLAGS += -Wl,-rpath,$(FTORCH_LOC)/lib64
 endif
-FTORCH_LOC := /opt/libtorch
+FTORCH_LOC := /usr/local/ftorch
 INCLDIR += -I$(FTORCH_LOC)/include/ftorch
 SLIBS += -L$(FTORCH_LOC)/lib64 -lftorch
 LDFLAGS += -Wl,-rpath,$(FTORCH_LOC)/lib64
