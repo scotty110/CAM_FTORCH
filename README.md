@@ -22,13 +22,13 @@ Adding:
 ifeq ($(strip $(USE_FTORCH)), True)
   FTORCH_LOC := /usr/local/ftorch
   INCLDIR += -I$(FTORCH_LOC)/include/ftorch
-  SLIBS += -L$(FTORCH_LOC)/lib64 -lftorch
-  LDFLAGS += -Wl,-rpath,$(FTORCH_LOC)/lib64
+  SLIBS += -L$(FTORCH_LOC)/lib -lftorch
+  LDFLAGS += -Wl,-rpath,$(FTORCH_LOC)/lib
 endif
 FTORCH_LOC := /opt/libtorch
 INCLDIR += -I$(FTORCH_LOC)/include/ftorch
-SLIBS += -L$(FTORCH_LOC)/lib64 -lftorch
-LDFLAGS += -Wl,-rpath,$(FTORCH_LOC)/lib64
+SLIBS += -L$(FTORCH_LOC)/lib -lftorch
+LDFLAGS += -Wl,-rpath,$(FTORCH_LOC)/lib
 ```
 Use the included `files/Makefile` as a reference.
 
