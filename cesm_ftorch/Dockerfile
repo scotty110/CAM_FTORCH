@@ -55,4 +55,4 @@ COPY files/Makefile /opt/cesm/cime/scripts/Tools/Makefile
 
 ENV PATH=/opt/cesm/cime/scripts:$PATH
 
-WORKDIR /opt/cesm/cime/scripts
+WORKDIR /root
