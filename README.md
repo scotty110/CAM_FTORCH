@@ -1,9 +1,10 @@
 # CAM/CESM on with GPU support 
-Build with Cuda LibTorch Support.
+Build container with support for CESM to call out to libtorch models. 
+Note: GPU support is still being worked on, issues with compiler versions. 
 
 <div style="text-align: center;">
   <img src="images/climate_computer.jpg" style="width:50%;">
-  <p><em>Make Climate Model for Cuda!</em></p>
+  <p><em>AI for Climate Models!</em></p>
 </div>
 
 ## Build Image
