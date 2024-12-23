@@ -1,4 +1,4 @@
-./create_newcase --case aqua_case --compset QPC6 --res f09_f09_mg17 && \
+create_newcase --case aqua_case --compset QPC6 --res f09_f09_mg17 && \
 cd aqua_case && \
 echo "nhtfrq(2) = -3">> user_nl_cam && \
 echo "mfilt(2) = 240">> user_nl_cam && \

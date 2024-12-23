@@ -1,31 +1,66 @@
 FROM cesm:latest
 
-# Install Libtorch and FTorch
+# Install dependencies
+RUN conda install -y pyyaml typing_extensions numpy
 
-RUN conda install -y pyyaml typing_extensions numpy 
+# Install build tools
+RUN apt-get update && apt-get install -y \
+    ccache \
+    ninja-build \
+    && rm -rf /var/lib/apt/lists/*
 
-# Need to build LibTorch from Source (https://github.com/pytorch/pytorch/blob/main/docs/libtorch.rst#building-libtorch-using-cmake)
-WORKDIR /opt 
-RUN git clone -b main --recurse-submodule https://github.com/pytorch/pytorch.git
+# Set up ccache
+ENV PATH=/usr/lib/ccache:$PATH \
+    CCACHE_DIR=/ccache \
+    CCACHE_MAXSIZE=10G
+
+# Clone and build PyTorch
+WORKDIR /opt
+RUN git clone -b main https://github.com/pytorch/pytorch.git && \
+    cd pytorch && \
+    # Initialize all submodules
+    git submodule sync && \
+    git submodule update --init --recursive
 
 WORKDIR /opt/pytorch_build
-
-# Set environment variables for CUDA
-ENV CUDA_HOME=/usr/local/cuda
-ENV CUDNN_INCLUDE_DIR=/usr/local/cuda/include
-ENV CUDNN_LIB_DIR=/usr/local/cuda/lib64
-
-# Build PyTorch with CUDA support
-RUN cmake -DBUILD_SHARED_LIBS:BOOL=ON \
+RUN cmake \
+    -GNinja \
+    -DBUILD_SHARED_LIBS:BOOL=ON \
     -DCMAKE_BUILD_TYPE:STRING=Release \
-    -DPYTHON_EXECUTABLE:PATH=`which python3` \
-    -DUSE_CUDA=ON \
-    -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME \
+    -DUSE_CUDA=OFF \
     -DCMAKE_INSTALL_PREFIX:PATH=../libtorch \
+    -DCMAKE_C_COMPILER=gcc \
+    -DCMAKE_CXX_COMPILER=g++ \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DUSE_CUDA_STATIC_LINK=OFF \
+    -DUSE_CUDNN=OFF \
+    -DUSE_NCCL=OFF \
+    -DUSE_OPENCV=OFF \
+    -DUSE_NUMPY=OFF \
+    -DUSE_DISTRIBUTED=OFF \
+    -DUSE_OPENMP=OFF \
+    -DUSE_MKLDNN=OFF \
+    -DUSE_FMT=ON \
+    -DBUILD_PYTHON=OFF \
+    -DBUILD_TEST=OFF \
+    -DBUILD_DOCS=OFF \
+    -DINSTALL_TEST=OFF \
+    -DUSE_ITT=OFF \
+    -DWERROR=OFF \
+    -DUSE_VALGRIND=OFF \
+    -DUSE_MLCOMPUTE=OFF \
+    -DPYTHON_EXECUTABLE=$(which python3) \
+    -DTORCH_DISABLE_GPU_ASSERTS=ON \
+    -DUSE_OBSERVERS=OFF \
+    -DUSE_ROCM=OFF \
+    -DUSE_ZMQ=OFF \
+    -DUSE_NUMA=OFF \
+    -DUSE_SYSTEM_EIGEN_INSTALL=OFF \
+    -DUSE_DISTRIBUTED=OFF \
+    -DATEN_NO_TEST=ON \
     ../pytorch
 
-#RUN cmake --build . --target install 
-RUN cmake --build . --target install -- -j $(nproc)
+RUN cmake --build . --target install -- -j$(nproc) 
 
 # Install FTorch
 WORKDIR /opt
@@ -37,10 +72,7 @@ RUN cmake .. \
     -DCMAKE_Fortran_COMPILER=gfortran \
     -DCMAKE_C_COMPILER=gcc \
     -DCMAKE_CXX_COMPILER=g++ \
-    -DUSE_CUDA=ON \
-    -DCUDA_BIN_PATH=/usr/local/cuda/bin \
-    -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
-    -DCUDA_LIB_DIR=/usr/local/cuda/lib64 \
+    -DUSE_CUDA=OFF \
     -DCMAKE_PREFIX_PATH=/opt/libtorch \
     -DCMAKE_INSTALL_PREFIX=/usr/local/ftorch
 
