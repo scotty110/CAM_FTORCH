@@ -27,13 +27,13 @@ RUN cmake \
     -GNinja \
     -DBUILD_SHARED_LIBS:BOOL=ON \
     -DCMAKE_BUILD_TYPE:STRING=Release \
-    -DUSE_CUDA=OFF \
+    -DUSE_CUDA=ON \
     -DCMAKE_INSTALL_PREFIX:PATH=../libtorch \
     -DCMAKE_C_COMPILER=gcc \
     -DCMAKE_CXX_COMPILER=g++ \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DUSE_CUDA_STATIC_LINK=OFF \
-    -DUSE_CUDNN=OFF \
+    -DUSE_CUDNN=ON \
     -DUSE_NCCL=OFF \
     -DUSE_OPENCV=OFF \
     -DUSE_NUMPY=OFF \
@@ -62,6 +62,10 @@ RUN cmake \
 
 RUN cmake --build . --target install -- -j$(nproc) 
 
+# Envs
+ENV LD_LIBRARY_PATH=/opt/libtorch/lib:$LD_LIBRARY_PATH
+ENV Torch_DIR=/opt/libtorch/share/cmake/Torch
+
 # Install FTorch
 WORKDIR /opt
 RUN git clone https://github.com/Cambridge-ICCS/FTorch.git /opt/FTorch
@@ -72,7 +76,10 @@ RUN cmake .. \
     -DCMAKE_Fortran_COMPILER=gfortran \
     -DCMAKE_C_COMPILER=gcc \
     -DCMAKE_CXX_COMPILER=g++ \
-    -DUSE_CUDA=OFF \
+    -DUSE_CUDA=ON \
+    -DCUDA_BIN_PATH=/usr/local/cuda/bin \
+    -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
+    -DCUDA_LIB_DIR=/usr/local/cuda/lib64 \
     -DCMAKE_PREFIX_PATH=/opt/libtorch \
     -DCMAKE_INSTALL_PREFIX=/usr/local/ftorch
 

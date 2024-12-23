@@ -6,6 +6,7 @@
 
 
 docker run -it \
+    --gpus all \
     -v $HOME/Documents/cesm_inputs:/root/cesm \
     -v $HOME/Documents/CAM:/opt/cesm/components/cam \
     -v $HOME/Documents/weights:/weights \

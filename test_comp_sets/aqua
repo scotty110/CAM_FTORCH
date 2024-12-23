@@ -4,7 +4,7 @@ echo "nhtfrq(2) = -3">> user_nl_cam && \
 echo "mfilt(2) = 240">> user_nl_cam && \
 echo "fincl2 = 'TS:I','PS:I', 'U850:I','T850:I','PRECT:I'">> user_nl_cam && \
 echo "">> user_nl_cam && \
-./xmlchange STOP_N=2,STOP_OPTION=nhours && \
+./xmlchange STOP_N=2,STOP_OPTION=ndays && \
 ./case.setup
 
 ./case.build
