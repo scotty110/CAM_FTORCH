@@ -1,8 +1,8 @@
 FROM cesm:latest
 
 # Install dependencies
-RUN conda install -y pyyaml typing_extensions numpy
-#RUN conda install -y pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia
+RUN pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu124
+RUN ln -s /opt/miniconda/lib/python3.11/site-packages/torch /usr/local/libtorch
 
 # Install build tools
 RUN apt-get update && apt-get install -y \
@@ -17,9 +17,9 @@ ENV PATH=/usr/lib/ccache:$PATH \
     CCACHE_MAXSIZE=10G
 
 # Install LibTorch
-RUN wget https://download.pytorch.org/libtorch/cu124/libtorch-cxx11-abi-shared-with-deps-2.5.1%2Bcu124.zip -O libtorch.zip && \
-    unzip libtorch.zip -d /usr/local && \
-    rm libtorch.zip
+#RUN wget https://download.pytorch.org/libtorch/cu124/libtorch-cxx11-abi-shared-with-deps-2.5.1%2Bcu124.zip -O libtorch.zip && \
+#    unzip libtorch.zip -d /usr/local && \
+#    rm libtorch.zip
 
 # Install FTorch
 WORKDIR /opt
