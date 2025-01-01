@@ -2,11 +2,13 @@ FROM cesm:latest
 
 # Install dependencies
 RUN conda install -y pyyaml typing_extensions numpy
+#RUN conda install -y pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia
 
 # Install build tools
 RUN apt-get update && apt-get install -y \
     ccache \
     ninja-build \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up ccache
@@ -14,57 +16,10 @@ ENV PATH=/usr/lib/ccache:$PATH \
     CCACHE_DIR=/ccache \
     CCACHE_MAXSIZE=10G
 
-# Clone and build PyTorch
-WORKDIR /opt
-RUN git clone -b main https://github.com/pytorch/pytorch.git && \
-    cd pytorch && \
-    # Initialize all submodules
-    git submodule sync && \
-    git submodule update --init --recursive
-
-WORKDIR /opt/pytorch_build
-RUN cmake \
-    -GNinja \
-    -DBUILD_SHARED_LIBS:BOOL=ON \
-    -DCMAKE_BUILD_TYPE:STRING=Release \
-    -DUSE_CUDA=ON \
-    -DCMAKE_INSTALL_PREFIX:PATH=../libtorch \
-    -DCMAKE_C_COMPILER=gcc \
-    -DCMAKE_CXX_COMPILER=g++ \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DUSE_CUDA_STATIC_LINK=OFF \
-    -DUSE_CUDNN=ON \
-    -DUSE_NCCL=OFF \
-    -DUSE_OPENCV=OFF \
-    -DUSE_NUMPY=OFF \
-    -DUSE_DISTRIBUTED=OFF \
-    -DUSE_OPENMP=OFF \
-    -DUSE_MKLDNN=OFF \
-    -DUSE_FMT=ON \
-    -DBUILD_PYTHON=OFF \
-    -DBUILD_TEST=OFF \
-    -DBUILD_DOCS=OFF \
-    -DINSTALL_TEST=OFF \
-    -DUSE_ITT=OFF \
-    -DWERROR=OFF \
-    -DUSE_VALGRIND=OFF \
-    -DUSE_MLCOMPUTE=OFF \
-    -DPYTHON_EXECUTABLE=$(which python3) \
-    -DTORCH_DISABLE_GPU_ASSERTS=ON \
-    -DUSE_OBSERVERS=OFF \
-    -DUSE_ROCM=OFF \
-    -DUSE_ZMQ=OFF \
-    -DUSE_NUMA=OFF \
-    -DUSE_SYSTEM_EIGEN_INSTALL=OFF \
-    -DUSE_DISTRIBUTED=OFF \
-    -DATEN_NO_TEST=ON \
-    ../pytorch
-
-RUN cmake --build . --target install -- -j$(nproc) 
-
-# Envs
-ENV LD_LIBRARY_PATH=/opt/libtorch/lib:$LD_LIBRARY_PATH
-ENV Torch_DIR=/opt/libtorch/share/cmake/Torch
+# Install LibTorch
+RUN wget https://download.pytorch.org/libtorch/cu124/libtorch-cxx11-abi-shared-with-deps-2.5.1%2Bcu124.zip -O libtorch.zip && \
+    unzip libtorch.zip -d /usr/local && \
+    rm libtorch.zip
 
 # Install FTorch
 WORKDIR /opt
@@ -80,14 +35,18 @@ RUN cmake .. \
     -DCUDA_BIN_PATH=/usr/local/cuda/bin \
     -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
     -DCUDA_LIB_DIR=/usr/local/cuda/lib64 \
-    -DCMAKE_PREFIX_PATH=/opt/libtorch \
+    -DCMAKE_PREFIX_PATH=/usr/local/libtorch \
     -DCMAKE_INSTALL_PREFIX=/usr/local/ftorch
 
 RUN make && make install
 
 # Add To LD_PATH
+ENV CUDA_HOME=/usr/local/cuda
 ENV LD_LIBRARY_PATH=/usr/local/ftorch/lib:$LD_LIBRARY_PATH 
-ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/cuda/"
+ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/cuda/lib64"
+
+ENV LD_LIBRARY_PATH=/usr/local/libtorch/lib:$LD_LIBRARY_PATH
+ENV Torch_DIR=/usr/local/libtorch/share/cmake/Torch
 
 # Copy Makefile
 COPY files/Makefile /opt/cesm/cime/scripts/Tools/Makefile 
